@@ -5,7 +5,7 @@
         return function($scope, $rootScope, GraphResource){
         	
         	$scope.graph = GraphResource.data;
-
+        	
             $scope.predecessors = [];
 
             $scope.$on('GraphTransitionEvent', function(event, params){

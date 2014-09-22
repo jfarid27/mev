@@ -24,9 +24,9 @@
                                <iframe scrolling="no" frameborder="0" width="99%" height="100%" ng-src="{{annotationsUrl}}" />
                        </div>
                        
-                       <div class="tab-pane" id="networkExplorerTabPane" ng-controller="NetworkController">
-               		  		<div>
-								<treemap-visualization graph='scope.graph'><treemap-visualization>
+                       <div class="tab-pane" id="networkExplorerTabPane">
+               		  		<div ng-controller="NetworkController">
+								<treemap-visualization graph='graph'><treemap-visualization>
                		  		</div>              	       
                        </div>
                

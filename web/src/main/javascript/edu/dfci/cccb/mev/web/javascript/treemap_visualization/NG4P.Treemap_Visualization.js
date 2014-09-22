@@ -65,6 +65,19 @@
 
                     var treemap = new TreemapDrawing(d3.select(element[0]))
                     var treemaparams = TreemapParameters
+                    
+                    scope.$watch('graph', function(newval, oldval){
+                    	
+                    	if(newval){
+                    		$rootScope.$emit('drawNetworkEvent', 'Treemap', {
+                                'clusteringMethods':'hierarchical',
+                                'layoutMethods':'slice-dice',
+                                'nodeAreaValue':'uniform',
+                                'nodeGroupValue':true,
+                                'colorEdgeByGroup':true
+                            })
+                    	}
+                    })
 
                     $rootScope.$on('drawNetworkEvent', function(event, networkType, networkParams){
 
@@ -76,8 +89,8 @@
 
 
                         networkParams.margin={top: 40, right: 10, bottom: 40, left: 10}
-                        networkParams.width= 800
-                        networkParams.height= 600
+                        networkParams.width= 600
+                        networkParams.height= 400
 
                         console.log(element)
 
