@@ -21,6 +21,8 @@
                         //Mock graph resource
                         graphResource = jasmine.createSpyObj('graphResource', ['update', 'create'])
 
+                        graphResource.data = 'zed';
+                        
                         scope = $rootScope.$new();
                         rootScope = $rootScope;
 
@@ -32,6 +34,12 @@
 
                     })
 
+                })
+                
+                describe('scope', function(){
+                	it('should add GraphResource.data to graph property', function(){
+                		expect(scope.graph).toBe('zed')
+                	})
                 })
 
                 describe('when GraphCreateEvent is raised', function(){

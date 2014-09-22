@@ -3,6 +3,8 @@
 
 
         return function($scope, $rootScope, GraphResource){
+        	
+        	$scope.graph = GraphResource.data;
 
             $scope.predecessors = [];
 
