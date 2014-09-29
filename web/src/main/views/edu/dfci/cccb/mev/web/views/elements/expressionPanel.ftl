@@ -9,25 +9,38 @@
        
                <div class="tab-content" id="heatmappanecontainer">
                
-               		  <div class="tab-pane" id="cohortSummaryTabPane" ng-controller="MevClinicalSummaryCtrl">
-               		  		   <div mev-clinical-summary-list ></div>                  	       
-                       </div>
-                       <div class="tab-pane active" id="heatmaptabpane">
+			       <div class="tab-pane active" id="heatmaptabpane">
                        
-                         <view-Content-Item project='project' view='project.views'>
-							</view-Content-Item>
-                               
-                       </div>
-                           
-                       <div class="tab-pane" id="annotationsTabPane">                      
-                               <!-- my-iframe id="annotationsIframe" height="100%" width="99%"></my-iframe -->
-                               <iframe scrolling="no" frameborder="0" width="99%" height="100%" ng-src="{{annotationsUrl}}" />
-                       </div>
+                     <view-Content-Item project='project' view='project.views'>
+					     </view-Content-Item>
                        
-                       <div class="tab-pane" id="networkExplorerTabPane">
-               		  		<div ng-controller="NetworkController">
-								<treemap-visualization graph='graph'><treemap-visualization>
-               		  		</div>              	       
-                       </div>
-               
+                   </div>
+                       
+           		   <div class="tab-pane" id="cohortSummaryTabPane" ng-controller="MevClinicalSummaryCtrl">
+           		  		   <div mev-clinical-summary-list ></div>                  	       
+                   </div>
+                   
+                   
+                       
+                   <div class="tab-pane" id="annotationsTabPane">                      
+                           <!-- my-iframe id="annotationsIframe" height="100%" width="99%"></my-iframe -->
+                           <iframe scrolling="no" frameborder="0" width="99%" height="100%" ng-src="{{annotationsUrl}}" />
+                   </div>
+                   
+                   
+                   <div class="tab-pane" id="networkExplorerTabPane">
+                       <div class="col-md-12">
+                       	   <div class="row">
+                       	       <div class="col-md-11 col-md-offset-1">
+	                               <div ng-controller="NetworkController">        
+	                                   
+	                                   <br>
+					                   <treemap-visualization graph='graph'><treemap-visualization>
+					                   
+					                   <h3>.</h3>
+					               </div>
+					           </div>
+					       </div>
+					   </div>
+                   </div>           
                </div> <!-- End Tab Content -->
