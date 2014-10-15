@@ -73,10 +73,10 @@
                         $rootScope.$emit('drawNetworkEvent', 'Treemap', {
 
                           'clusteringMethods':'hierarchical',
--                         'layoutMethods':'slice-dice',
--                         'nodeAreaValue':'uniform',
--                         'nodeGroupValue':true,
--                         'colorEdgeByGroup':true
+                          'layoutMethods':'slice-dice',
+                          'nodeAreaValue':'uniform',
+                          'nodeGroupValue':true,
+                          'colorEdgeByGroup':true
 
                         })
 
