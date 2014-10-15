@@ -1,7 +1,7 @@
 (function(){
 
     var deps = [
-        'angular', 'd3',
+        'angular', 'd3', 'jquery',
         './lib/hierarchical_clustering',
         './lib/uniform_noise',
         './lib/random_id',
@@ -11,7 +11,7 @@
         './lib/treemap_visualization'
     ]
 
-    define(deps, function (angular, d3, hierarchicalClustering, uniformNoise, randomID, edgeSelector, greaterThan, completeLinkage, treemapVis) {
+    define(deps, function (angular, d3, jquery, hierarchicalClustering, uniformNoise, randomID, edgeSelector, greaterThan, completeLinkage, treemapVis) {
 
         angular.module('NG4P.Treemap_Visualization',[])
         .factory('EdgeLinkageStrategiesFactory', [function(){
@@ -66,6 +66,24 @@
                     var treemap = new TreemapDrawing(d3.select(element[0]))
                     var treemaparams = TreemapParameters
 
+                    scope.$watch('graph', function(newval, oldval){
+
+                      if(newval){
+                       
+                        $rootScope.$emit('drawNetworkEvent', 'Treemap', {
+
+                          'clusteringMethods':'hierarchical',
+-                         'layoutMethods':'slice-dice',
+-                         'nodeAreaValue':'uniform',
+-                         'nodeGroupValue':true,
+-                         'colorEdgeByGroup':true
+
+                        })
+
+                      }
+
+                    })
+
                     $rootScope.$on('drawNetworkEvent', function(event, networkType, networkParams){
 
                         if (!(networkType=='Treemap') || !scope.graph){
@@ -75,8 +93,8 @@
 
 
                         networkParams.margin={top: 40, right: 10, bottom: 40, left: 10}
-                        networkParams.width= 800
-                        networkParams.height= 600
+                        networkParams.width = jquery('body').width() *.55
+                        networkParams.height = jquery('body').height() *.80
 
                         if (networkParams.clusteringMethods == 'hierarchical'){
                             drawHierarchical()
