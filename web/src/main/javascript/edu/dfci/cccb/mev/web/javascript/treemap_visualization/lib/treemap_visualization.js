@@ -1,7 +1,7 @@
 (function(){define(['angular', 'd3'], function (angular, d3) {
 
 
-    function visualization(rootNode, graph, noise, params){
+    function visualization(rootNode, graph, noise, params, behaviors){
 
         var self = this;
 
@@ -118,6 +118,9 @@
             'cy':function(d){return d.y},
             'r':4
         })
+        .on('click', behaviors['onClick'])
+        .on('mouseover', behaviors['onMouseOver'](svg))
+
 
         svg.selectAll('path').data(graph.edges).enter()
         .append('path')
