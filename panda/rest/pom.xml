@@ -14,5 +14,34 @@
     <artifactId>mev-panda</artifactId>
     <version>BAYLIE-SNAPSHOT</version>
   </parent>
+  
+  <dependencies>
+  
+    <dependency>
+      <groupId>edu.dfci.cccb</groupId>
+      <artifactId>mev-panda-domain</artifactId>
+      <version>BAYLIE-SNAPSHOT</version>
+    </dependency>
+  
+    <dependency>
+      <groupId>edu.dfci.cccb</groupId>
+      <artifactId>mev-configuration-rest</artifactId>
+      <version>BAYLIE-SNAPSHOT</version>
+    </dependency>
 
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
+    
+  </dependencies>
 </project>
