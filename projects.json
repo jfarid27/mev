@@ -1,3 +1,6 @@
 {
-  "modules":[{"project":"mev-common-domain", "directory":"./common/domain"}]
+  "modules":[
+      {"project":"mev-common-domain", "directory":"./common/domain"},
+      {"project":"mev-common-web", "directory":"./common/web"}
+  ]
 }
