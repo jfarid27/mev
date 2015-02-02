@@ -1,0 +1,12 @@
+<table st-table="rowCollection" class="table">
+<thead>
+<tr>
+	<th ng-repeat="header for header in settings.header" st-sort="{{header.value}}">{{header.text}}</th>
+</tr>
+</thead>
+<tbody>
+<tr st-select-row="row" st-select-mode="multiple" ng-repeat="row in rowCollection">
+	<td ng-repeat="header for header in settings.header">{{row['header.value']}}</td>
+</tr>
+</tbody>
+</table>
