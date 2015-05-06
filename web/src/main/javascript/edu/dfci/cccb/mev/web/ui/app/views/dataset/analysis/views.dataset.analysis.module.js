@@ -7,7 +7,7 @@ define(["ng", "lodash",
         "./limma/views.dataset.analysis.limma.module",
         "./deseq/views.dataset.analysis.deseq.module",
         "./nmf/views.dataset.analysis.nmf.module",
-        "./nmf/views.dataset.analysis.pca.module",
+        "./pca/views.dataset.analysis.pca.module",
         "./survival/views.dataset.analysis.survival.module"], function(ng, _){
 	var module = ng.module("mui.views.dataset.analysis", ["mui.widgets.analysis", 
 	                                                      "mui.views.dataset.analysis.hcl", 
