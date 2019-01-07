@@ -1,13 +1,18 @@
 @import "analysis/views-dataset-analysis.less";
 @import "selectionSets/views-dataset-selectionSets.less";
+@import "dashboard.less";
 
 .state-root.state-dataset{
 	.project-tree-header{
 		border-bottom: 1px solid @project-tree-border-color;
 		border-top: 1px solid transparent;	
-		padding: @nav-link-padding-ver @padding-base-horizontal;
+		padding: 0px @padding-base-horizontal 0px 4px;		
 	//	margin: 0 -@padding-base-horizontal;
 		background-color: @body-bg;
+		select.form-control {
+		  	border: 0px none;			
+			box-shadow: none;			
+		}
 	}
 	
 	&.fixed-footer {
@@ -25,4 +30,14 @@
 	//		}
 		}	
 	}	
+}
+
+///////////////////////////////
+.ag-fresh .ag-pinned-header {
+  background: whitesmoke;  
+  border-bottom: 1px solid #808080;
+}
+.ag-fresh .ag-header-container {
+  background: whitesmoke;
+  border-bottom: 1px solid #808080;
 }

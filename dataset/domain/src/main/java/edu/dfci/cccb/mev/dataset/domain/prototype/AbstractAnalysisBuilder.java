@@ -24,12 +24,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import edu.dfci.cccb.mev.dataset.domain.contract.Analysis;
 import edu.dfci.cccb.mev.dataset.domain.contract.AnalysisBuilder;
 import edu.dfci.cccb.mev.dataset.domain.contract.Dataset;
+import edu.dfci.cccb.mev.dataset.domain.contract.DatasetException;
 
 /**
  * @author levk
@@ -43,8 +41,8 @@ import edu.dfci.cccb.mev.dataset.domain.contract.Dataset;
 @Log4j
 public abstract class AbstractAnalysisBuilder <B extends AnalysisBuilder<?, ?>, A extends Analysis> implements AnalysisBuilder<B, A> {
 
-  private @Getter @JsonProperty final String type;
-  private @Getter (PROTECTED) @JsonProperty String name;
+  private @Getter final String type;
+  private @Getter (PROTECTED) String name;
   private @Getter (PROTECTED) Dataset dataset;
 
   /* (non-Javadoc)
@@ -69,4 +67,32 @@ public abstract class AbstractAnalysisBuilder <B extends AnalysisBuilder<?, ?>, 
     this.dataset = dataset;
     return (B) this;
   }
+  
+  public static class AnalysisStatus extends AbstractAnalysis<AnalysisStatus> implements Analysis{}
+  
+  @Override  
+  public AnalysisStatus buildAsync(){
+    
+    final AnalysisStatus status = new AnalysisStatus ().type (type()).name (name()).status (Analysis.MEV_ANALYSIS_STATUS_IN_PROGRESS);
+    
+    new Thread (new Runnable() {           
+      @Override      
+      public void run () {
+          try {
+            Analysis result = build();
+            if(result.name() == null)
+              result.name(name());
+            dataset().analyses ().complete (result);
+            log.info(String.format("Analysis %s of type %s completed wit status %s.", name(), type(), result.status ()));
+          } catch (Throwable e) {                    
+            status.status (Analysis.MEV_ANALYSIS_STATUS_ERROR).error (new DatasetException(String.format("Error running analysis '%s' of type %s: %s", type, name, e.getMessage ()), e).toString ());
+            log.error(String.format("ERROR in %s analysis %s.", type, name), e);
+          }
+      }
+    }).start ();
+    
+    dataset().analyses().put(status);
+    return status;
+  }
+  
 }

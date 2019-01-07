@@ -1,39 +1,41 @@
-define(["ng", "lodash", 
-        "./hcl/views.dataset.analysis.hcl.module", 
+define(["ng", "lodash",
         "./kmeans/views.dataset.analysis.kmeans.module",
-        "./ttest/views.dataset.analysis.ttest.module",
-        "./fisher/views.dataset.analysis.fisher.module",
-        "./anova/views.dataset.analysis.anova.module",
-        "./limma/views.dataset.analysis.limma.module",
-        "./deseq/views.dataset.analysis.deseq.module",
         "./nmf/views.dataset.analysis.nmf.module",
-        "./survival/views.dataset.analysis.survival.module"], function(ng, _){
+        "./histogram/views.dataset.analysis.histogram.module",
+        "./genesd/views.dataset.analysis.genesd.module",
+        "mev-pca"
+        ], function(ng, _){
 	var module = ng.module("mui.views.dataset.analysis", ["mui.widgets.analysis", 
-	                                                      "mui.views.dataset.analysis.hcl", 
+	                                                      // "mui.views.dataset.analysis.hcl",
 	                                                      "mui.views.dataset.analysis.kmeans",
-	                                                      "mui.views.dataset.analysis.ttest",
-	                                                      "mui.views.dataset.analysis.fisher",
-	                                                      "mui.views.dataset.analysis.anova",
-	                                                      "mui.views.dataset.analysis.limma", 
-	                                                      "mui.views.dataset.analysis.deseq",
+	                                                      // "mui.views.dataset.analysis.fisher",
+	                                                      // "mui.views.dataset.analysis.anova",
+	                                                      // "mui.views.dataset.analysis.limma",
+	                                                      // "mui.views.dataset.analysis.deseq",
 	                                                      "mui.views.dataset.analysis.nmf",
-	                                                      "mui.views.dataset.analysis.survival",
-	                                                      "Mev.AnalysisAccordionCollection"]);
+	                                                      // "mui.views.dataset.analysis.survival",
+	                                                      // "mui.views.dataset.analysis.topgo",
+	                                                      "mui.views.dataset.analysis.histogram",
+	                                                      "mui.views.dataset.analysis.genesd",
+	                                                      // "mui.views.dataset.analysis.genemad",
+	                                                      // "mui.views.dataset.analysis.voom",
+	                                                      // "Mev.AnalysisAccordionCollection",
+	                                                      "mev-pca"]);
 	module.config(["$stateProvider", "$urlRouterProvider", "AnalysisTypes", function($stateProvider, $urlRouterProvider, AnalysisTypes){				
 		$stateProvider		
 		.state("root.dataset.analysis", {			
 			url: "analysis/{analysisType}/{analysisId}/",			
 			parent: "root.dataset",	
 			displayName: "{{analysis.name}} analysis",
-			templateProvider: ["$stateParams", "$http", function($stateParams, $http){
-				console.debug("root.dataset.analysis templateProvider ", $stateParams.analysisType);
+			templateProvider: ["$stateParams", "$http", "analysis", function($stateParams, $http, analysis){
+				console.debug("root.dataset.analysis templateProvider ", $stateParams.analysisType, analysis);
 				var templateUrl="app/views/dataset/analysis/default/view.analysis.default.tpl.html";
 				
-				
-				var analysisType = AnalysisTypes[$stateParams.analysisType];
-				
-				if(analysisType && analysisType.shortName){
-					templateUrl=templateUrl.replace("default", analysisType.shortName).replace("default", analysisType.shortName);
+				if(analysis.status!=="ERROR"){
+					var analysisType = AnalysisTypes[$stateParams.analysisType];				
+					if(analysisType && analysisType.shortName){
+						templateUrl=templateUrl.replace("default", analysisType.shortName).replace("default", analysisType.shortName);
+					}
 				}
 				console.debug("analysis templateUrl:", templateUrl);
    	     		return $http.get(templateUrl).then(function(response){
@@ -41,10 +43,14 @@ define(["ng", "lodash",
    	     			return response.data;
    	     		});
 			}],
-			controllerProvider: ["$state", "$stateParams", function($state, $stateParams){
+			controllerProvider: ["$state", "$stateParams", "analysis", function($state, $stateParams, analysis){
 				console.debug("DatasetAnalysisVM", $state, $state.is("root.dataset.analysis"), AnalysisTypes[$stateParams.analysisType]);		
 				
-				return AnalysisTypes[$stateParams.analysisType].viewModel;
+				if(analysis.status!=="ERROR"){
+					return AnalysisTypes[$stateParams.analysisType].viewModel;
+				}else{
+					return "AnalysisDefaultVM";
+				}
 //				if($state.is("root.dataset.analysis")){
 //					$state.go(".result", {resultId: analysis.result[0].name});
 				
@@ -84,10 +90,9 @@ define(["ng", "lodash",
 		});
 	}]);
 	
-	module.config(["resultsTableDefaultsProvider", function(resultsTableDefaultsProvider){
-		resultsTableDefaultsProvider.setOrdering("pValue");
+	module.controller("AnalysisDefaultVM", ["$scope", "analysis", function($scope, analysis){
+		this.analysis=analysis;
 	}]);
-	
 	module.directive("mevAnalysis", ["$compile", function($compile){
 		return {
 			restrict: "AE",

@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
+
+import edu.dfci.cccb.mev.configuration.util.contract.Config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -26,14 +29,15 @@ import lombok.extern.log4j.Log4j;
 
 @Log4j
 @Configuration
-@PropertySources({
-  @PropertySource ("classpath:/presets.properties"),
-  @PropertySource (value="classpath:/presets-${spring_profiles_active}.properties",ignoreResourceNotFound=true)
-})
-@Import ({PresetHSQLConfig.class})
+//@PropertySources({
+//  @PropertySource ("classpath:/presets.properties"),
+//  @PropertySource (value="classpath:/presets-${spring_profiles_active}.properties",ignoreResourceNotFound=true),
+//  @PropertySource (value="file:${MEV_CONFIG_DIR}/presets.properties",ignoreResourceNotFound=true),
+//  @PropertySource (value="file:${MEV_CONFIG_DIR}/presets-${spring_profiles_active}.properties",ignoreResourceNotFound=true),  
+//})
+
 public class PresetFlatFileConfig {
   
-  @Inject Environment environment;
   
   @Bean(name="mev-presets-loader") @Inject 
   public PresetValuesLoader presestValuesLoader(){
@@ -51,23 +55,28 @@ public class PresetFlatFileConfig {
     log.debug ("***PresetDIMENSIONBuilder: FLAT-FILE");
     return new PresetDimensionBuilderFlatFile();
   }
-  
-  @Bean @Profile("!test") @Inject 
-  public String prefetchPresetRowKeys(final Presets presets, 
-                                    final PresetDimensionBuilder builder) throws PresetException, InterruptedException{
-    
+
+  @Bean @Profile("!test") @Inject
+  public String prefetchPresetRowKeys(final Presets presets,
+                                      final PresetDimensionBuilder builder,
+                                      @Named("presets-config")Config config) throws PresetException, InterruptedException{
+
+    String preload = config.getProperty("mev.presets.tcga.preload");
+    if(preload!=null && preload.equalsIgnoreCase("false"))
+      return "none";
+
     List<Thread> threads = new ArrayList<Thread>();
-    
+
     for(final Preset preset : presets.getAll ()){
       Thread t = new Thread(new Runnable() {
         @Override
-        public void run () {                   
+        public void run () {
             log.debug ("***Prefetching row keys for PRESET: "+preset.name ());
             try {
               builder.buildRows (preset.descriptor ());
             } catch (PresetException e) {
               e.printStackTrace();
-            }        
+            }
         }
       });
       t.start();
@@ -76,7 +85,7 @@ public class PresetFlatFileConfig {
     for(int i=0;i<threads.size ();i++){
       threads.get(i).join();
     }
-    
+
     return "done";
   }
 }

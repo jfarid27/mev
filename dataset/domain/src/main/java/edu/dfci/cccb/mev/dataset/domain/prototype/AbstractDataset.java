@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import ch.lambdaj.Lambda;
@@ -36,6 +37,7 @@ import edu.dfci.cccb.mev.dataset.domain.contract.InvalidDimensionTypeException;
 import edu.dfci.cccb.mev.dataset.domain.contract.SelectionNotFoundException;
 import edu.dfci.cccb.mev.dataset.domain.contract.Workspace;
 import edu.dfci.cccb.mev.dataset.domain.mock.MockTsvInput;
+import edu.dfci.cccb.mev.dataset.domain.subset.DataSubset;
 import edu.dfci.cccb.mev.io.implementation.TemporaryFile;
 
 /**
@@ -52,9 +54,14 @@ public abstract class AbstractDataset implements Dataset, AutoCloseable {
   private @Getter String name;
 
   protected AbstractDataset (String name) throws InvalidDatasetNameException {
+    rename (name);
+  }
+
+  public Dataset rename (String name) throws InvalidDatasetNameException {
     if (!VALID_DATASET_NAME_PATTERN.matcher (name).matches ())
       throw new InvalidDatasetNameException ().name (name);
     this.name = name;
+    return this;
   }
 
   @Override
@@ -88,5 +95,11 @@ public abstract class AbstractDataset implements Dataset, AutoCloseable {
 
       workspace.put (builder.build (new MockTsvInput (name, temp)));
     }
+  }
+
+  @Override
+  @SneakyThrows (InvalidDatasetNameException.class)
+  public Dataset subset (String name, List<String> columns, List<String> rows) {
+    return new DataSubset (name, this, columns, rows);
   }
 }

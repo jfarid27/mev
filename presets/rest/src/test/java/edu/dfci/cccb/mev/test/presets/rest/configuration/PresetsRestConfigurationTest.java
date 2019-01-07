@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.sql.DataSource;
 
+import edu.dfci.cccb.mev.presets.rest.configuration.PresetHSQLConfig;
 import lombok.extern.log4j.Log4j;
 
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,7 @@ import org.springframework.jdbc.datasource.init.DataSourceInitializer;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import edu.dfci.cccb.mev.configuration.util.contract.Config;
 import edu.dfci.cccb.mev.dataset.rest.configuration.DatasetDomainBuildersConfiguration;
 import edu.dfci.cccb.mev.presets.rest.configuration.PresetsRestConfiguration;
 import edu.dfci.cccb.mev.test.annotation.server.configuration.ProbeAnnotationsPersistanceConfigTest;
@@ -27,10 +29,11 @@ import edu.dfci.cccb.mev.test.annotation.server.configuration.ProbeAnnotationsPe
 @Log4j
 @Profile("test")
 @Configuration
-@Import ({DatasetDomainBuildersConfiguration.class, PresetsRestConfiguration.class, ProbeAnnotationsPersistanceConfigTest.class})
+@Import ({DatasetDomainBuildersConfiguration.class, PresetsRestConfiguration.class, ProbeAnnotationsPersistanceConfigTest.class, PresetHSQLConfig.class})
 public class PresetsRestConfigurationTest extends WebMvcConfigurerAdapter{
 
-  @Inject Environment environment;
+//  @Inject Environment environment;
+  @Inject @Named("presets-persistence-config") private Config environment;
   
   @Bean (name="tcgaPresetRoot")
   public URL tcgaPresetRoot() throws IOException{    
@@ -45,10 +48,10 @@ public class PresetsRestConfigurationTest extends WebMvcConfigurerAdapter{
 
       ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
       
-      String scriptDropAll = environment.getRequiredProperty("mev.presets.db.schema.script.dropall");
+      String scriptDropAll = environment.getProperty("mev.presets.db.schema.script.dropall");
       log.info ("***dataSourceInitializer-dropAllPresetsScript-TEST:"+scriptDropAll);
       //populator.addScript(new ClassPathResource(scriptDropAll));
-      String scriptTestPresetValuesFlatTable = environment.getRequiredProperty("mev.presets.db.schema.script.TestPresetValuesFlatTable");
+      String scriptTestPresetValuesFlatTable = environment.getProperty("mev.presets.db.schema.script.TestPresetValuesFlatTable");
       populator.addScript(new ClassPathResource(scriptTestPresetValuesFlatTable));
             
       initializer.setDatabasePopulator(populator);

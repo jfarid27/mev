@@ -36,9 +36,7 @@ import edu.dfci.cccb.mev.configuration.rest.prototype.MevRestConfigurerAdapter;
 import edu.dfci.cccb.mev.dataset.rest.resolvers.AnalysisPathVariableMethodArgumentResolver;
 import edu.dfci.cccb.mev.limma.domain.contract.Limma;
 import edu.dfci.cccb.mev.limma.domain.contract.LimmaBuilder;
-import edu.dfci.cccb.mev.limma.domain.simple.StatelessScriptEngineFileBackedLimmaBuilder;
-import edu.dfci.cccb.mev.limma.rest.assembly.json.EntryJsonSerializer;
-import edu.dfci.cccb.mev.limma.rest.assembly.json.GoEntryJsonSerializer;
+import edu.dfci.cccb.mev.limma.domain.r.RserveLimmaBuilder;
 import edu.dfci.cccb.mev.limma.rest.assembly.json.LimmaJsonSerializer;
 import edu.dfci.cccb.mev.limma.rest.assembly.tsv.LimmaTsvMessageConverter;
 
@@ -54,7 +52,7 @@ public class LimmaRestConfiguration extends MevRestConfigurerAdapter {
   @Bean
   @Scope (SCOPE_REQUEST)
   public LimmaBuilder limmaBuilder () {
-    return new StatelessScriptEngineFileBackedLimmaBuilder ();
+    return new RserveLimmaBuilder ();
   }
 
   @Bean (name = "R")
@@ -73,7 +71,7 @@ public class LimmaRestConfiguration extends MevRestConfigurerAdapter {
    * #addJsonSerializers(java.util.List) */
   @Override
   public void addJsonSerializers (List<JsonSerializer<?>> serializers) {
-    serializers.addAll (asList (new EntryJsonSerializer (), new LimmaJsonSerializer (), new GoEntryJsonSerializer ()));
+    serializers.addAll (asList (new LimmaJsonSerializer ()));
   }
 
   /* (non-Javadoc)

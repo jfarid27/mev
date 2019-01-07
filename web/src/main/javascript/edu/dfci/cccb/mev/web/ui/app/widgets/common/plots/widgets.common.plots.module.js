@@ -1,5 +1,6 @@
-define(["ng", "./timeFunction/widgets.common.plots.timeFunction.module"],
+define(["ng"
+	],
 function(ng){
-	var module=ng.module("mui.widgets.common.plots", ["mui.widgets.common.plots.timeFunction"]);
+	var module=ng.module("mui.widgets.common.plots", arguments, arguments);
 	return module;
 });

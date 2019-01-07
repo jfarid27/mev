@@ -11,10 +11,14 @@ define(["ng"], function(ng){
 				},
 				addColumnSelection: function(){
 					$state.go("root.dataset.columnSet", {datasetId: dataset.id});
+				},
+				getSelectedKeys: function(){
+					dataset.selections.union(dimension, $scope.getSelected());
 				}
-				
 		};
 	};
 	SelectionSetsViewVM.$inject=["$scope", "$stateParams", "$state", "dataset", "dimension"];
+	SelectionSetsViewVM.$provider="controller";
+	SelectionSetsViewVM.$name="SelectionSetsViewVM";
 	return SelectionSetsViewVM;
 });

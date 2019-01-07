@@ -34,7 +34,8 @@ public interface Limma extends Analysis {
 
     double qValue ();
     
-    // double tStat () // FIXME ADD IT
+    double t();
+    
   }
 
   public enum Species {
@@ -61,9 +62,7 @@ public interface Limma extends Analysis {
     double pValue ();
   }
 
-  Iterable<Entry> full ();
-
-  Iterable<GoEntry> topGo ();
+  Iterable<? extends Entry> full ();
 
   Selection control ();
 

@@ -20,13 +20,28 @@ import java.util.Calendar;
  * @author levk
  * 
  */
-public interface Analysis {
+public interface Analysis extends Comparable<Analysis> {
+
+  final String MEV_ANALYSIS_STATUS_SUCCESS = "SUCCESS";
+  final String MEV_ANALYSIS_STATUS_IN_PROGRESS = "IN_PROGRESS";
+  final String MEV_ANALYSIS_STATUS_ERROR = "ERROR";
 
   final String VALID_ANALYSIS_NAME_REGEX = "[a-zA-Z0-9_\\-\\+\\ \\.]+";
 
   String name ();
+  
+  Analysis name(String name);
 
   String type ();
 
   Calendar timestamp ();
+
+  String status ();
+  
+  Analysis status(String status);
+
+  String error ();
+  
+  Analysis error (String error);
+
 }

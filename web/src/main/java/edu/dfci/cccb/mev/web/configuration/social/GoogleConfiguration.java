@@ -14,9 +14,23 @@
  */
 package edu.dfci.cccb.mev.web.configuration.social;
 
+import static java.util.Arrays.asList;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+
+import javax.inject.Named;
+
+import com.google.auth.Credentials;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -37,6 +51,12 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
+
+import edu.dfci.cccb.mev.configuration.util.archaius.ArchaiusConfig;
+import edu.dfci.cccb.mev.configuration.util.contract.Config;
 import edu.dfci.cccb.mev.dataset.rest.google.SecurityContext;
 import edu.dfci.cccb.mev.web.domain.social.SimpleConnectionSignUp;
 import edu.dfci.cccb.mev.web.domain.social.SimpleSignInAdapter;
@@ -72,12 +92,6 @@ public class GoogleConfiguration extends WebMvcConfigurerAdapter {
                   ";https://www.googleapis.com/auth/userinfo.email" +
                   ";https://www.googleapis.com/auth/plus.me" +
                   ";https://www.googleapis.com/auth/plus.login" +
-                  ";https://www.googleapis.com/auth/drive" +
-                  ";https://www.googleapis.com/auth/drive.appdata" +
-                  ";https://www.googleapis.com/auth/drive.scripts" +
-                  ";https://www.googleapis.com/auth/drive.apps.readonly" +
-                  ";https://www.googleapis.com/auth/drive.metadata.readonly" +
-                  ";https://www.googleapis.com/auth/drive.file" +
                   ";https://www.googleapis.com/auth/plus.circles.read");
       }
     });
@@ -100,7 +114,7 @@ public class GoogleConfiguration extends WebMvcConfigurerAdapter {
    * connections.
    */
   @Bean
-  @Scope (value = "request", proxyMode = ScopedProxyMode.INTERFACES)
+  @Scope (value = "request")
   public ConnectionRepository connectionRepository (UsersConnectionRepository usersConnectionRepository) {
     return usersConnectionRepository.createConnectionRepository (SecurityContext.getCurrentUser ().getId ());
   }
@@ -112,7 +126,7 @@ public class GoogleConfiguration extends WebMvcConfigurerAdapter {
    * @throws NotConnectedException if the user is not connected to Google.
    */
   @Bean
-  @Scope (value = "request", proxyMode = ScopedProxyMode.INTERFACES)
+  @Scope (value = "request")
   public Google google (ConnectionRepository connectionRepository) {
     return connectionRepository.getPrimaryConnection (Google.class).getApi ();
   }
@@ -144,6 +158,24 @@ public class GoogleConfiguration extends WebMvcConfigurerAdapter {
       public void postSignIn (Connection<Google> connection, WebRequest request) {}
     });
     return controller;
+  }
+
+  @Bean (name = "gcloud-config")
+  public Config getConfig () {
+    return new ArchaiusConfig ("gcloud-config.properties");
+  }
+
+  @Bean
+  @Lazy
+  @Scope ("prototype")
+  public Storage storage (@Named ("gcloud-config") Config config) throws InvalidKeySpecException,
+                                                                 NoSuchAlgorithmException, IOException {
+    Credentials c = ServiceAccountCredentials.fromStream(new FileInputStream(config.getProperty("mev.gcloud.serviceaccount.key.location", "/etc/google/service.json")));
+    return StorageOptions.newBuilder ()
+                         .setCredentials(c)
+                         .setProjectId (config.getProperty ("gcloud.project.id"))
+                         .build ()
+                         .getService ();
   }
 
   /* (non-Javadoc)

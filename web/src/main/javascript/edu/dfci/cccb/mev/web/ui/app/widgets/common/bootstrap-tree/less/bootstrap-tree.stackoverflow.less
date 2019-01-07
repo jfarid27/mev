@@ -64,11 +64,17 @@
 	    	&.selected {    		
 		    	color: lighten(@hight-color, 5%);
 	    	}
-	    	
+	    	&.disabled {
+	    		color: @gray;
+	    		pointer-events: none;
+	    	}
+	    	&.error {
+	    		color: lighten(@brand-danger, 10%);
+	    	}
 		   	> :first-child{
 				&.glyphicon-minus-sign,
 				&.glyphicon-plus-sign{
-					margin-right: 5px;
+					margin-right: 5px;					
 				}
 				
 				& + *{
@@ -77,9 +83,14 @@
 			}
 			
 			.btn-group{
+				padding-left: 6px;
 				.btn {
-					padding: 0px 0px 0px 6px;
+					padding: 0px 0px 0px 0px;
 					border: 0px;
+				}
+				&.pull-left{
+					padding-left: 0px;
+					padding-right: 4px;
 				}
 			}
 		}    
@@ -107,5 +118,9 @@
 	li.nodeItem:last-child::before {
 	    height:30px;
 	}	
-	
+	project-node-default {	
+		> div{
+			display: inline-block;
+		}	
+	}	
 }

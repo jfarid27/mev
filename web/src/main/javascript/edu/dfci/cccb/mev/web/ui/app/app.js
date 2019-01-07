@@ -1,94 +1,55 @@
-define(["ng", 
-        "nguirouter",
-        "bootstrap",
-        "uibootstrap", 
-        "ngresource",  
-        "app/views/views.module",
-        "app/widgets/widgets.module",
-        "app/domain/domain.module",
-        
-        'ngGrid',
-        'fileSaver',
-        'mbAngularUtilsPagination',
-        'mbAngularUtilsBreadcrumbs',
-        
-        'directives', 
-        'services', 
-        'controllers', 
-        'setmanager/SetManager',                
-        'heatmap/Heatmap',
-        'heatmapvisualization/HeatmapVisualization',
-        'analysisaccordioncollection/AnalysisAccordionCollection',
-        'analysismodalcollection/AnalysisModalCollection',
-        'viewCollection/ViewCollection',
-        'geneboxplotvisualization/GeneBoxPlotVisualization',
-        'mainmenu',
-        'geods',
-        'clinical',
-        'cohortanalysis/CohortAnalysis',        
-        'setmanager/SetManager',
-        'presets/PresetManager',
-        'mainpanel/MainPanel',
-        
-        ], function(ng){
+define(["mui",
+	"jquery-ui-bundle/jquery-ui.theme.css",
+	"angular-animate",
+	"angular-ui-router",
+	"bootstrap",
+	"angular-ui-bootstrap",
+	"angular-route",
+	"app/views/root/views.root.module",
+	"app/views/import/views.import.module",
+	"app/views/welcome/views.welcome.module",
+	"app/widgets/widgets.module",
+	"app/utils/utils.module",
+
+	'browser-filesaver',
+	'angular-utils-ui-breadcrumbs',
+
+	'ui-router-extras',
+	'oclazyload'
+], function(ng){
 	"use strict";
-	return ng.module("ngbootstrap-app", ["ui.bootstrap",
-	                                     "ngResource",
-	                                     "ui.router",
-	                                     "mui.views",
-	                                     "mui.components",
-	                                     "mui.domain.navigator",
-	                                     
-	                                     'ngGrid',
-	                                     'angularUtils.directives.dirPagination',
-	                                     'angularUtils.directives.uiBreadcrumbs',
-	                                     
-	                                     'myApp.directives', 
-	                            	     'myApp.services',
-	                            	     'myApp.controllers',
-	                            	     'Mev.SetManager',
-	                            	     'Mev.PresetManager',
-	                            	     'Mev.heatmap',
-	                            	     'Mev.heatmapvisualization',
-	                            	     'Mev.AnalysisAccordionCollection',
-	                            	     'Mev.AnalysisModalCollection',
-	                            	     'Mev.ViewCollection',
-	                            	     'Mev.MainMenuModule',
-	                            	     'Mev.GeneBoxPlotVisualization',
-	                            	     'Mev.GeodsModule',
-	                            	     'Mev.ClinicalSummary',
-	                            	     'Mev.CohortAnalysis'
-	                            	     
-	                                     ])
-	.config(['$stateProvider', '$urlRouterProvider',
-	function($stateProvider, $urlRouterProvider){
-		
-		//default page is the welcome page
-		$urlRouterProvider.when("/", "/welcome");
-		$urlRouterProvider.when("", "/welcome");
-		
-		$stateProvider
-		.state("root", {
-			templateUrl: "app/views/root/templates/root.tpl.html",
-			controller: "RootCtrl",
-			controllerAs: "RootCtrl",
-			abstract: true, 			
- 			breadcrumbProxy: "root.welcome"
- 			
-		})
-		.state("root.about", {
-			url: "/about",
-			templateUrl: "app/views/about/templates/about.tpl.html",
-			parent: "root"
-		})
-		.state("root.contact", {
-			url: "/contact",
-			templateUrl: "app/views/contact/templates/contact.tpl.html",
-			parent: "root",
-			data: {
-				sidemenuUrl: "app/views/contact/templates/contact.sidemenu.tpl.html"
-			}
-		})
+	return ng.module("ngbootstrap-app", ["ct.ui.router.extras"], arguments)
+		.config(['$stateProvider', '$urlRouterProvider',
+			function($stateProvider, $urlRouterProvider){
+
+				//default page is the welcome page
+				$urlRouterProvider.when("/", "/welcome");
+				$urlRouterProvider.when("", "/welcome");
+
+				$stateProvider
+					.state("root", {
+						url: "",
+						templateUrl: "app/views/root/templates/root.tpl.html",
+						controller: "RootCtrl",
+						controllerAs: "RootCtrl",
+						abstract: true,
+						breadcrumbProxy: "root.welcome"
+
+					})
+					.state("root.about", {
+						url: "/about",
+						templateUrl: "app/views/about/templates/about.tpl.html",
+						parent: "root"
+					})
+					.state("root.contact", {
+						url: "/contact",
+						templateUrl: "app/views/contact/templates/contact.tpl.html",
+						parent: "root",
+						data: {
+							sidemenuUrl: "app/views/contact/templates/contact.sidemenu.tpl.html"
+						}
+					})
+
 //		.state("root.issues", {
 //			url: "/issues",
 //			templateUrl: "app/views/issues/templates/issues.tpl.html",
@@ -99,23 +60,100 @@ define(["ng",
 //				sidemenuUrl: "app/views/issues/templates/issues.sidemenu.accordion.tpl.html"
 //			}
 //		})
-		;
-	}])
-	.config(function($provide) {
+				;
+			}])
+		.service("mevFetchSrc", ["$ocLazyLoad", function($ocLazyLoad){
+			var self = this;
+			self.sources={};
+			this.fetch = function(src, $$AnimateJsProvider){
+				if(self.sources[src])
+					return self.sources[src].promise;
+
+				var source = self.sources[src]={
+					status: "importing",
+					promise: System.import(src)
+						.then(function (module) {
+							_.assign(self.sources[src], {
+								status: "imported",
+								module: module,
+							});
+							console.log("heavy imported", arguments);
+							return $ocLazyLoad.inject(["ng",])
+								.then(function(){
+									console.log("loaded ng", arguments);
+									ng.module("ng").provider("$$animateJs", $$AnimateJsProvider);
+									_.assign(self.sources[src], {
+										status: "loading"
+									});
+									return $ocLazyLoad.load([module])
+										.then(function () {
+											_.assign(self.sources[src], {
+												status: "completed"
+											});
+											console.log("heavy loaded", arguments);
+										})
+										.catch(function (e) {
+											throw e;
+										});
+								});
+						}).catch(function (e) {
+							throw e;
+						})
+				};
+				return source.promise;
+			}
+		}])
+		.config(["$futureStateProvider", "$$animateJsProvider", function ($futureStateProvider, $$AnimateJsProvider) {
+			$futureStateProvider.stateFactory("lazy", ["mevFetchSrc", "futureState",
+				function(mevFetchSrc, futureState){
+					return mevFetchSrc.fetch(futureState.src, $$AnimateJsProvider)
+						.catch(function(e){
+							throw e;
+						})
+				}]);
+				$futureStateProvider.futureState({
+					parent: "root",
+					type: "lazy",
+					stateName: 'root.datasets',
+					src: 'app/views/datasets/views.datasets.module',
+					url: "/datasets",
+					displayName: "datasets"
+				});
+				$futureStateProvider.futureState({
+					type: "lazy",
+					stateName: "root.abstractDataset",
+					src: 'app/views/dataset/views.dataset.module',
+					parent: "root",
+					"abstract": true,
+					url: "/dataset",
+					breadcrumbProxy: "root.datasets",
+					displayName: "datasets",
+					template: "<ui-view></ui-view>"
+				});
+				$futureStateProvider.futureState({
+					type: "lazy",
+					stateName: 'root.dataset',
+					src: 'app/views/dataset/views.dataset.module',
+					parent: "root.abstractDataset",
+					"abstract": true,
+					url: "/:datasetId/"
+				});
+		}])
+		.config(function($provide) {
 //	    $provide.decorator('$httpBackend', function($delegate) {
 //	        var proxy = function(method, url, data, callback, headers) {
 //	            var interceptor = function(status, data, headers) {
 //	                var _this = this,
 //	                    _arguments = arguments;
-//	                
+//
 //	                //most likely returning a template, no delay
-//	                if(typeof data==='string' && data.charAt(0)==="<"){		                
-//		                callback.apply(_this, arguments);		                
+//	                if(typeof data==='string' && data.charAt(0)==="<"){
+//		                callback.apply(_this, arguments);
 //	                }else{
 //	                	setTimeout(function() {
 //		                    callback.apply(_this, _arguments);
-//		                }, 700);	
-//	                }	                
+//		                }, 700);
+//	                }
 //	            };
 //	            return $delegate.call(this, method, url, data, interceptor, headers);
 //	        };
@@ -124,34 +162,46 @@ define(["ng",
 //	        }
 //	        return proxy;
 //	    });
-	})	
-	.config(['$sceProvider', function($sceProvider) {		
-	  $sceProvider.enabled(false);
-	}])
-	.config(["paginationTemplateProvider", function(paginationTemplateProvider){
-		paginationTemplateProvider.setPath('/container/vendor/mbAngularUtils/pagination/dirPagination.tpl.html');
-	}])	
-	.run(["$rootScope", "$state", "$stateParams",
-	function ($rootScope, $state, $stateParams) {
-		
-//		EndpointConfig();    
-	    
-	    $rootScope.$state = $state;
-	    $rootScope.$stateParams = $stateParams;	    
-	    
-	    $rootScope.$on('$stateChangeStart', 
-            function(event, toState, toParams, fromState, fromParams){ 
+		})
+		.config(['$sceProvider', function($sceProvider) {
+			$sceProvider.enabled(false);
+		}])
+		// .config(["paginationTemplateProvider", function(paginationTemplateProvider){
+		// 	paginationTemplateProvider.setPath('/container/vendor/mbAngularUtils/pagination/dirPagination.tpl.html');
+		// }])
+		.config(["$httpProvider", function($httpProvider){
+			$httpProvider.interceptors.push(function($q, $rootScope) {
+				return {
+					responseError: function(rejection) {
+						console.log("rejection", rejection);
+						if(_.includes(rejection.data, "DatasetNotFoundException"))
+							$rootScope.$broadcast("mui:error:sessionTimeout", rejection);
+						return $q.reject(rejection);
+					}
+				};
+			});
+		}])
+		.run(["$rootScope", "$state", "$stateParams",
+			function ($rootScope, $state, $stateParams) {
+
+//		EndpointConfig();
+
+				$rootScope.$state = $state;
+				$rootScope.$stateParams = $stateParams;
+
+				$rootScope.$on('$stateChangeStart',
+					function(event, toState, toParams, fromState, fromParams){
 //                $("#ui-view").html("");
-                $(".page-loading").removeClass("hidden");
-        });
+						$(".page-loading").removeClass("hidden");
+					});
 
-        $rootScope.$on('$stateChangeSuccess',
-            function(event, toState, toParams, fromState, fromParams){ 
-                $(".page-loading").addClass("hidden");
-        });
+				$rootScope.$on('$stateChangeSuccess',
+					function(event, toState, toParams, fromState, fromParams){
+						$(".page-loading").addClass("hidden");
+						if (toState.redirectTo) {
+							$state.go(toState.redirectTo, toParams);
+						}
+					});
+			}]);
 
-	    
-	    
-	}]);
-	
 });

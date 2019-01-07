@@ -1,4 +1,4 @@
-define([], function(){
+define(["lodash"], function(_){
 	return {
 		selectionIntersect: function(params){
 		// type SelectionIntersect :: Params => Selection
@@ -44,6 +44,19 @@ define([], function(){
 			}
 			
 			
+		},
+		union: function(selections){			
+			var keySets = selections.map(function(item){
+				return item.keys;
+			});
+			return _.union.apply(this,keySets);
+		},
+		unionByName: function(dimension, names){
+			self = this;
+			var selections = _.filter(self.selections[dimension], function(item){
+				return _.includes(names, item.name);
+			});
+			return this.selections.union(selections);
 		}
-	}
-})
+	}	
+});

@@ -20,6 +20,9 @@ import javax.servlet.ServletRegistration.Dynamic;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
+import edu.dfci.cccb.mev.edger.rest.EdgeConfiguration;
+import edu.dfci.cccb.mev.normalization.rest.NormalizationConfiguration;
+import edu.dfci.cccb.mev.wgcna.rest.configuration.WgcnaConfiguration;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -30,15 +33,23 @@ import edu.dfci.cccb.mev.anova.rest.configuration.AnovaRestConfiguration;
 import edu.dfci.cccb.mev.dataset.rest.configuration.DatasetRestConfiguration;
 import edu.dfci.cccb.mev.dataset.rest.configuration.RDispatcherConfiguration;
 import edu.dfci.cccb.mev.deseq.rest.configuration.DESeqRestConfiguration;
+import edu.dfci.cccb.mev.genemad.rest.configuration.GeneMADAnalysisConfiguration;
+import edu.dfci.cccb.mev.genesd.rest.configuration.GeneSDAnalysisConfiguration;
 import edu.dfci.cccb.mev.geods.rest.configuration.GeoDatasetsConfigurationMain;
+import edu.dfci.cccb.mev.gsea.rest.GseaConfiguration;
 import edu.dfci.cccb.mev.hcl.rest.configuration.HclRestConfiguration;
+import edu.dfci.cccb.mev.histogram.rest.configuration.HistogramAnalysisConfiguration;
 import edu.dfci.cccb.mev.kmeans.rest.configuration.KMeansRestConfiguration;
 import edu.dfci.cccb.mev.limma.rest.configuration.LimmaRestConfiguration;
 import edu.dfci.cccb.mev.nmf.rest.configuration.NmfRestConfiguration;
+import edu.dfci.cccb.mev.pca.rest.configuration.PcaConfiguration;
+import edu.dfci.cccb.mev.pe.rest.configuration.PathwayEnrichmentConfiguration;
 import edu.dfci.cccb.mev.presets.rest.configuration.PresetsRestConfiguration;
 import edu.dfci.cccb.mev.stats.rest.configuration.StatsRestConfiguration;
 import edu.dfci.cccb.mev.survival.rest.configuration.SurvivalAnalysisConfiguration;
 import edu.dfci.cccb.mev.t_test.rest.configuration.TTestRestConfiguration;
+import edu.dfci.cccb.mev.topgo.rest.configuration.TopGoConfiguration;
+import edu.dfci.cccb.mev.voom.rest.configuration.VoomConfiguration;
 import edu.dfci.cccb.mev.web.configuration.container.ContainerConfigurations;
 
 /**
@@ -71,8 +82,18 @@ public class ApplicationInitializer implements WebApplicationInitializer {
     mvcContext.register (StatsRestConfiguration.class);
     mvcContext.register (DESeqRestConfiguration.class);
     mvcContext.register (NmfRestConfiguration.class);
-	mvcContext.register (SurvivalAnalysisConfiguration.class);
-    
+    mvcContext.register (SurvivalAnalysisConfiguration.class);
+    mvcContext.register (TopGoConfiguration.class);
+    mvcContext.register (PcaConfiguration.class);
+    mvcContext.register (VoomConfiguration.class);
+    mvcContext.register (HistogramAnalysisConfiguration.class);
+    mvcContext.register (GeneSDAnalysisConfiguration.class);
+    mvcContext.register (GeneMADAnalysisConfiguration.class);
+    mvcContext.register (PathwayEnrichmentConfiguration.class);
+    mvcContext.register (GseaConfiguration.class);
+    mvcContext.register (NormalizationConfiguration.class);
+    mvcContext.register (EdgeConfiguration.class);
+    mvcContext.register (WgcnaConfiguration.class);
 
     DispatcherServlet dispatcher = new DispatcherServlet (mvcContext);
 

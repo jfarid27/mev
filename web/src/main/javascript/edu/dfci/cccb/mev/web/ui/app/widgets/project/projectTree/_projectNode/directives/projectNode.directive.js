@@ -21,8 +21,10 @@ define([], function(){
 		var templateMap = {
 			Datasets: "<div>{{node.nodeName}}</div>",
 			Analyses: "<div>{{node.nodeName}}</div>",
-			"Column Sets": "<column-node node='node'></column-node>",
-			"Row Sets": "<row-node node='node'></row-node>",
+			"Sample Sets": "<column-node node='node'></column-node>",
+			"Gene Sets": "<row-node node='node'></row-node>",
+			"Analysis": "<analysis-node node='node'></analysis-node>",
+			"selectionSet": "<selection-set-node node='node'></selection-set-node>",
 //			Dataset: "<div ng-click='console.debug(\"dataset.click\")'>{{node.nodeName}}</div>",
 //			Analysis: "<project-analysis analysis=\"node.nodeData\"></project-analysis>",			
 			Default: "<project-node-default node='node' ></project-node-default>"
@@ -38,7 +40,7 @@ define([], function(){
 				node: "="
 			},
 			replace: true,
-			template: "<span  id='{{vm.id}}'  ng-class='{selected: vm.isSelected()}' class='nodeWrapper node-{{node.nodenode.name || node.nodeName}}' ng-click='vm.onClick($event)' ng-dblclick='vm.toggle($event)'></span>",
+			template: "<span  id='{{vm.id}}'  ng-class='{selected: vm.isSelected(), disabled: vm.isDisabled(), error: vm.isError()}' class='nodeWrapper node-{{node.nodenode.name || node.nodeName}}' ng-click='vm.onClick($event)' ng-dblclick='vm.toggle($event)'></span>",
 //			templateUrl: "app/widgets/project/projectTree/_projectNode/templates/projectNodeDefault.bootstrapTree.tpl.html",
 //			templateUrl: "app/widgets/project/projectTree/_projectNode/templates/projectNodeDefault.tpl.html",			
 			require: "^projectTree",
@@ -67,23 +69,36 @@ define([], function(){
                     			isSelected: function(){
                     				return ctrl.getSelected()===scope.node.nodePath;
                     			},
-                    			onClick: function(e){                    				
+                    			isDisabled: function(){
+                    				return scope.node.nodeData.status && (scope.node.nodeData.status === "IN_PROGRESS");
+                    			},
+                    			isError: function(){
+                    				return scope.node.nodeData.status && scope.node.nodeData.status === "ERROR";
+                    			},
+                    			onClick: function(e){
+//                    				if(this.isDisabled())
+//                    					return;
                     				ctrl.toggleSelected(scope.node.nodePath);
                     				console.debug("node.click, ui:projectTree:nodeSelected", scope.node.nodeName);                    				
                     				$rootScope.$broadcast("ui:projectTree:nodeSelected", scope.node);
                     			}
                     	};
-                    	
-//                    	console.debug("Post LINK: ", scope.node);
+                    	 
+                    	console.debug("Post LINK node: ", scope.node.nodeName, scope.node.nodeConfig.type, scope.node);
 //                    	scope.$watch("node.nodeData", function(newVal, oldVal){
 //                        	if(newVal && !oldVal){
 //                        		scope.$emit("ui:projectTree:dataChanged");
 //                        	}
 //                        }, true);
                     	
-                    	var template = templateMap[scope.node.nodeName] || templateMap.Default;
+                    	var template = templateMap[scope.node.nodeName] || templateMap[scope.node.nodeConfig.type] || templateMap.Default;
                     	template="<i class='nodeToggle glyphicon glyphicon-minus-sign' ng-click='vm.nodeclick($event)'></i>"+template;
                     	elm.html(template);                    	
+//                    	elm.after("<span class=\"nodeAction\"><a>hi</a></span>")
+//  border: solid 1px #999;
+//  padding: 4px;
+//  border-radius: 20px;
+//  margin-left: 5px;
                         $compile(elm.contents())(scope);                           
                     }
 				};

@@ -1,7 +1,7 @@
 define(["angular", 
         "geods/Geods.module",         
         "geods/domain/GeodsSummaryFactory",
-        "angularResource",
+        "angular-route",
         "geods/services/MevGeodsSummaryResourceSrvc", 
         "geods/services/MevGeodsImportSrvc",
         "geods/services/MevGeodsSearchResourceSrvc"], 
@@ -10,8 +10,8 @@ function(angular,
 		GeodsSummaryFactory){
 	
 	angularModule.service('MevGeodsSummaryFactory', 
-		 ["MevGeodsSummaryResourceSrvc", "MevGeodsImportSrvc", "MevGeodsSearchResourceSrvc", "$q",
-		 function(MevGeodsSummaryResourceSrvc, MevGeodsImportSrvc, MevGeodsSearchResourceSrvc, $q){
-			return new GeodsSummaryFactory(MevGeodsSummaryResourceSrvc, MevGeodsSearchResourceSrvc, MevGeodsImportSrvc, $q);
+		 ["MevGeodsSummaryResourceSrvc", "MevGeodsImportSrvc", "MevGeodsSearchResourceSrvc", "$q", "$rootScope",
+		 function(MevGeodsSummaryResourceSrvc, MevGeodsImportSrvc, MevGeodsSearchResourceSrvc, $q, $rootScope){
+			return new GeodsSummaryFactory(MevGeodsSummaryResourceSrvc, MevGeodsSearchResourceSrvc, MevGeodsImportSrvc, $q, $rootScope);
 		}]);
 });

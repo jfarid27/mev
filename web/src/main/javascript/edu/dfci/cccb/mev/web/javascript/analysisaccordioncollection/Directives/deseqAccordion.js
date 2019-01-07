@@ -1,22 +1,37 @@
-(function () {
-
-    define([], function () {
+define([], function () {
 
         return function (module) {
 
-            module.directive('deseqAccordion', ['tableResultsFilter', 'alertService', 'projectionService', 'pathService', 'BoxPlotService',
-                function (tableFilter, alertService, projection, paths, BoxPlotService) {
+            module.directive('deseqAccordion', ['tableResultsFilter', 'alertService', 'projectionService', 'pathService', 'BoxPlotService', 'mevAnalysisTypes',
+                function (tableFilter, alertService, projection, paths, BoxPlotService, mevAnalysisTypes) {
                     return {
                         restrict: 'E',
                         templateUrl: paths.module + '/templates/DESeqAccordion.tpl.html',
                         scope: {
                             project: "=project",
                             analysis: "=analysis",
+                            heatmapView: "=",
                             isItOpen: "@"
                         },
-                        link: function (scope) {
+                        controller: ["$scope", "mevAnalysisTypes", function(scope, mevAnalysisTypes){
+                            scope.analysisTypes = mevAnalysisTypes.all();
 
+                            scope.analysis.getFilteredKeys = function(dimension){
+                                if(dimension==="row")
+                                    return scope.filteredResults.map(function(item){
+                                        return item.id;
+                                    });
+                            };
+                            scope.analysis.getOriginalInputKeys=function(dimension){
+                                if(dimension==="column"){
+                                    var selectionNames = [scope.analysis.params.experiment, scope.analysis.params.control];
 
+                                    var keys = scope.project.dataset.selections.unionByName("column", selectionNames);
+                                    keys.displayName = selectionNames.join("+");
+                                    return keys;
+                                }
+
+                            };
                             scope.headers = [
                                 {
                                     'name': 'ID',
@@ -41,16 +56,16 @@
                                 {
                                     'name': 'P-Value',
                                     'field': "pValue",
-                                    'icon': "<=",
+                                    'icon': ["<=", ">="],
                                     'default': 0.05
                                 },
                                 {
                                     'name': 'q-Value',
                                     'field': "qValue",
-                                    'icon': "<="
+                                    'icon': ["<=", ">="]
                                 }
                             ];
-                            
+
                             scope.filteredResults = undefined;
 
 //                            scope.applyFilter = function () {
@@ -59,14 +74,22 @@
 //
 //                                return scope.filteredResults;
 //                            };
-                            
-                            
-                            scope.viewGenes = function(filterParams){
-	                       		 scope.filteredResults = tableFilter(scope.analysis.results, filterParams);
-	                       		 //and filter the heatmap
-	                       		scope.$emit("ui:filteredResults", scope.filteredResults);	                       	
-	                       		 scope.applyToHeatmap();
-	                       	}
+
+
+                            scope.viewGenes = function(filteredResults){
+                                scope.filteredResults = filteredResults;
+                                //and filter the heatmap
+//	                       		scope.$emit("ui:filteredResults", scope.filteredResults);
+                                scope.applyToHeatmap(filteredResults);
+                            }
+
+                            scope.viewPage = function(pageResults){
+                                var control = _.find(scope.project.dataset.column.selections, function(selection){return selection.name===scope.analysis.params.control;});
+                                var experiment = _.find(scope.project.dataset.column.selections, function(selection){return selection.name===scope.analysis.params.experiment;});
+                                scope.boxPlotGenes = BoxPlotService.prepareBoxPlotData(scope.project.dataset, pageResults,
+                                    [control, experiment],
+                                    scope.analysis.randomId);
+                            }
 
                             scope.selectionParams = {
                                 name: undefined,
@@ -107,30 +130,14 @@
 
                             };
 
-                            scope.applyToHeatmap = function () {
+                            scope.applyToHeatmap = function (filteredResults) {
+                                var labels = filteredResults.map(projection.ids);;
+                                scope.heatmapView = scope.heatmapView.applyFilter("row", labels);
+                            };
 
-//                              var labels = getKeys(scope.filteredResults);
-                          	                                
-                          	var labels = scope.filteredResults.map(projection.ids);;
+                        }],
+                        link: function (scope) {            
 
-                              scope.project.generateView({
-                                  viewType: 'heatmapView',
-                                  labels: {
-                                      column: {
-                                          keys: scope.project.dataset.column.keys
-                                      },
-                                      row: {
-                                          keys: labels
-                                      }
-                                  },
-                                  expression: {
-                                      min: scope.project.dataset.expression.min,
-                                      max: scope.project.dataset.expression.max,
-                                      avg: scope.project.dataset.expression.avg,
-                                  }
-                              });
-
-                          };
                         }
 
                     };
@@ -140,7 +147,4 @@
 
         }
 
-    })
-
-
-})()
+})

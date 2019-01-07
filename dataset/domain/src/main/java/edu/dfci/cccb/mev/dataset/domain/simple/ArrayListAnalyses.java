@@ -16,11 +16,15 @@ package edu.dfci.cccb.mev.dataset.domain.simple;
 
 import static edu.dfci.cccb.mev.dataset.domain.support.LifecycleUtilities.destroy;
 
+import java.io.Closeable;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import lombok.SneakyThrows;
+import lombok.Synchronized;
 import lombok.ToString;
 import lombok.extern.log4j.Log4j;
 import edu.dfci.cccb.mev.dataset.domain.contract.Analysis;
@@ -35,7 +39,7 @@ import edu.dfci.cccb.mev.dataset.domain.prototype.AbstractAnalyses;
 @ToString
 public class ArrayListAnalyses extends AbstractAnalyses implements AutoCloseable {
 
-  private List<Analysis> analyses = new ArrayList<> ();
+  private List<Analysis> analyses = Collections.synchronizedList (new ArrayList<Analysis> ());
 
   /* (non-Javadoc)
    * @see
@@ -43,9 +47,27 @@ public class ArrayListAnalyses extends AbstractAnalyses implements AutoCloseable
    * .dataset.domain.contract.Analysis) */
   @Override
   public void put (Analysis analysis) {
+	if(log.isDebugEnabled())
+		log.info(String.format("Adding analysis %s with status %s: %s", analysis.name(), analysis.status(), analysis));
+	else    
+		log.debug(String.format("Adding analysis %s with status %s", analysis.name(), analysis.status()));
     analyses.add (0, analysis);
   }
 
+  @Override
+  @Synchronized
+  public void complete (Analysis result) throws AnalysisNotFoundException {
+    for (Analysis analysis : analyses)
+      if (analysis.name ().equals (result.name ())) {
+        remove(result.name());
+        put(result);        
+        if (log.isDebugEnabled ())
+          log.info ("Completed analysis " + result.name () + " of type " + analysis.getClass ().getName ());
+        return;
+      }
+    throw new AnalysisNotFoundException ().name (result.name());
+  }
+  
   /* (non-Javadoc)
    * @see
    * edu.dfci.cccb.mev.dataset.domain.contract.Analyses#get(java.lang.String) */
@@ -64,12 +86,24 @@ public class ArrayListAnalyses extends AbstractAnalyses implements AutoCloseable
    * @see
    * edu.dfci.cccb.mev.dataset.domain.contract.Analyses#remove(java.lang.String) */
   @Override
+  @Synchronized
   public void remove (String name) throws AnalysisNotFoundException {
-    for (Iterator<Analysis> analyses = this.analyses.iterator (); analyses.hasNext ();)
-      if (analyses.next ().name ().equals (name)) {
+    for (Iterator<Analysis> analyses = this.analyses.iterator (); analyses.hasNext ();){
+      Analysis target = analyses.next();
+      if (target.name ().equals (name)) {
+        try{
+          if(target instanceof AutoCloseable)
+            ((AutoCloseable)target).close();
+          else if(target instanceof Closeable)
+            ((Closeable)target).close();
+        }catch(Exception e){
+          log.error(String.format("Failed to close analysis %s", name), e);
+        }
         analyses.remove ();
         return;
       }
+    }
+
     throw new AnalysisNotFoundException ().name (name);
   }
 
@@ -97,4 +131,5 @@ public class ArrayListAnalyses extends AbstractAnalyses implements AutoCloseable
   public void close () throws Exception {
     destroy (new Exception ("Failure closing analyses"), analyses);
   }
+
 }

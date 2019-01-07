@@ -1,11 +1,11 @@
-MultiExperiment Viewer
+#[MultiExperiment Viewer](http://mev.tm4.org) [![Build Status](https://travis-ci.org/dfci-cccb/mev.svg?branch=master)](https://travis-ci.org/dfci-cccb/mev)
 
 ===
 
-The new web client MeV
- 
-[![Build Status](https://travis-ci.org/dfci-cccb/mev.svg?branch=master)](https://travis-ci.org/dfci-cccb/mev)
-
-===
-
-To build you need to have Java 7, maven 3.0+ and R 2.15 with limma and multtest packages installed from bioconductor. Once you have all of that, open a command line window at the source folder, type "mvn clean install" once that's done change folder to web and launch the application server: "cd web/; mvn jetty:run" After that point your browser to http://localhost:8080
+To run locally install [docker](https://docs.docker.com/) and [minikube](https://kubernetes.io/docs/getting-started-guides/minikube/#installation) then follow minikube instructions to start up a cluster. Configure docker to use minikube and launch our MeV image
+```
+eval $(minikube docker-env)
+docker run -p8080:8080 -d cccb/mev-web:baylie-2017-02-10
+echo http://$(minikube ip):8080
+```
+The last line of output should be the URL of the application

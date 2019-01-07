@@ -22,8 +22,13 @@ import java.util.TimeZone;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import edu.dfci.cccb.mev.dataset.domain.contract.Analysis;
 
 /**
@@ -34,10 +39,13 @@ import edu.dfci.cccb.mev.dataset.domain.contract.Analysis;
 @ToString
 @Accessors (fluent = true)
 @SuppressWarnings ("unchecked")
-public abstract class AbstractAnalysis <T extends AbstractAnalysis<?>> implements Analysis, Comparable<AbstractAnalysis<?>> {
+@JsonIgnoreProperties({"timestamp"})
+public abstract class AbstractAnalysis <T extends AbstractAnalysis<?>> implements Analysis {
 
-  private @Getter String name;
-  private @Getter String type;
+  private @JsonProperty @Getter String name;
+  private @JsonProperty @Getter String type;
+  private @JsonProperty @Getter @Setter String status = Analysis.MEV_ANALYSIS_STATUS_SUCCESS;
+  private @JsonProperty @Getter @Setter String error;
   private @Getter Calendar timestamp = getInstance ();
 
   public T name (String name) {
@@ -50,6 +58,16 @@ public abstract class AbstractAnalysis <T extends AbstractAnalysis<?>> implement
     return (T) this;
   }
 
+  public T status (String status) {
+    this.status = status;
+    return (T) this;
+  }
+
+  public T error (String error) {
+    this.error = error;
+    return (T) this;
+  }
+  
   public T timestamp (Locale locale, TimeZone timezone) {
     timestamp = getInstance (timezone, locale);
     return (T) this;
@@ -58,7 +76,7 @@ public abstract class AbstractAnalysis <T extends AbstractAnalysis<?>> implement
   /* (non-Javadoc)
    * @see java.lang.Comparable#compareTo(java.lang.Object) */
   @Override
-  public int compareTo (AbstractAnalysis<?> o) {
+  public int compareTo (Analysis o) {
     return timestamp ().compareTo (o.timestamp ());
   }
 }

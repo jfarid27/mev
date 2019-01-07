@@ -12,10 +12,12 @@ define(['jquery', 'angular'], function(jquery, angular){
 				rootScope.$state.go("^."+selection.dimension.toLowerCase()+"Set", {setId: selection.name});
 			}
 			
-			var selectionSetManagerScope=selectionSetMgrDOM.scope();
+			var selectionSetManagerScope=selectionSetMgrDOM.scope();			
 			console.debug("selectionSetManagerScope:", selectionSetManagerScope);
 			if(selectionSetManagerScope){
 				selectionSetManagerScope.addItem(selection);
+			}else{
+				rootScope.$broadcast("mui:dataset:selections:added", selection.dimension.toLowerCase(), selection);
 			}
 			
 		},
@@ -24,6 +26,10 @@ define(['jquery', 'angular'], function(jquery, angular){
 			console.debug("loadedProject", theProject);
 			if(theProject.metadata.customMetadata.dimension==="COLUMN")
 				rootScope.$broadcast("openRefine:loadedAnnotations:column", theProject);
+			else if(theProject.metadata.customMetadata.dimension==="ROW")
+				rootScope.$broadcast("openRefine:loadedAnnotations:row", theProject);
+			else
+				rootScope.$broadcast("openRefine:loadedAnnotations", theProject);
 		},
 		openDataset: function(dataset){
 			console.debug('in openDataset');

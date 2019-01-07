@@ -3,13 +3,8 @@ define(["ng",
         "./mainmenu/mainmenu.module", 
         "./project/widgets.project.module",
         "./dataset/widgets.dataset.module",
-        "./analysis/widgets.analysis.module"],
+        "./dashboard/widgets.dashboard.module"],
 function(ng){
-	var module=ng.module("mui.components", ["ui.router",
-	     "mui.widgets.common",
-	     "mui.widgets.mainmenu", 
-	     "mui.widgets.project",
-	     "mui.widgets.dataset",
-	     "mui.widgets.analysis"]);	
+	var module=ng.module("mui.components", arguments, arguments);
 	return module;
 });

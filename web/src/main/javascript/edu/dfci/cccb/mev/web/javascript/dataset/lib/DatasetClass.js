@@ -1,6 +1,8 @@
-define(['./datasetStatistics', './selectionSort', './selectionHelpers', './expressionModule'], 
-		function( datasetStatistics, selectionSort, selectionHelpers, expressionModule){
-    
+define(['./datasetStatistics', './selectionSort', './selectionHelpers', './expressionModule',
+	"./DatasetValues32", "./DatasetValuesSourceHttp", "./DatasetValuesCache"],
+function( datasetStatistics, selectionSort, selectionHelpers, expressionModule,
+		  DatasetValues, DatasetValuesSourceHttp, DatasetValuesCache){
+	"use strict";    
     //inverter :: [a] --> Object
     //  Function to invert an array into an object with properties of names
     //  and values of the original index.
@@ -11,7 +13,7 @@ define(['./datasetStatistics', './selectionSort', './selectionHelpers', './expre
         
         self.map(function(label, index){
             obj[label] = index;
-        })
+        });
         
         return obj;
     }
@@ -22,15 +24,16 @@ define(['./datasetStatistics', './selectionSort', './selectionHelpers', './expre
     function ranger(n){
     	var r = [];
     	for (var i=0; i<n;i++){
-    		r.push(i)
+    		r.push(i);
     	}
     	return r;
     }
-
+    
+    
 	//Constructor :: [String], [DatasetResponseObj] -> $Function [Dataset]
     //  Function that constructs base dataset object without angular module
     //  dependent behaviors.
-	return function(datasetName, datasetRespObj){
+	return function(datasetName, datasetRespObj, $http, $rootScope, mevDb, mevSettings){
 	    
 	    if (!datasetName){
 	        throw TypeError('datasetName parameter not defined');
@@ -42,24 +45,64 @@ define(['./datasetStatistics', './selectionSort', './selectionHelpers', './expre
 	        return null
 	    }
 	    
-	 
-		var self = this;
-		
+	    var self = this;
 		this.id = datasetName;
 		
 		this.datasetName = datasetName;
+		this.valueStore = new DatasetValues(
+			this,
+			new DatasetValuesCache(
+				new DatasetValuesSourceHttp(
+					$http,
+					this.id
+				),
+				mevDb
+			),
+			$rootScope,
+			mevSettings,
+			mevDb);
 		this.expression = {
 			values: datasetRespObj.values,
+			data: {
+				getRow: function(index){
+					var row=[];
+					for(var c=0; c<self.column.keys.length; c++){
+						row.push({
+							value: datasetRespObj.dataview.getFloat64((index+c)*Float64Array.BYTES_PER_ELEMENT, false),
+							row: self.row.keys[index],
+							column: self.column.keys[c]
+						});						
+					}
+					return row;
+				}
+			},
 			max: datasetRespObj.max,
 			min: datasetRespObj.min,
 			avg: datasetRespObj.avg,
+			tryGet: this.valueStore.getByKey,
+			getSome: this.valueStore.getSome,
+			getDict: this.valueStore.getDict,
+//			tryGet: function(labelPair){
+//				var deferred = q.defer();				
+//				setTimeout(function(){
+//					var r = self.rowLabels2Indexes[labelPair[0]];
+//				    var c = self.columnLabels2Indexes[labelPair[1]];
+//					var value = datasetRespObj.dataview.getFloat64((r*self.column.keys.length+c)*Float64Array.BYTES_PER_ELEMENT, false);
+//					deferred.resolve(value);
+//				}, 500);				
+//				return deferred.promise;
+//			},
 			get: function(labelPair){
 			    
 			    var r = self.rowLabels2Indexes[labelPair[0]];
 			    var c = self.columnLabels2Indexes[labelPair[1]];
 			    
-			    
-			    return this.values[(r * self.column.keys.length) + c]
+			    return {
+			    	value: datasetRespObj.dataview.getFloat64((r*self.column.keys.length+c)*Float64Array.BYTES_PER_ELEMENT, false),
+			    	row: labelPair[0],
+			    	column: labelPair[1]
+			    };
+//			    return this.values[(r * self.column.keys.length) + c]
 			},
 			statistics : datasetStatistics,
 			ranger : ranger
@@ -100,10 +143,19 @@ define(['./datasetStatistics', './selectionSort', './selectionHelpers', './expre
 	        row: datasetRespObj.row.selections,
 	        intersection: function(params){
 	        	return selectionHelpers.selectionIntersect.call(self, params)
-	        }
+	        },
+	        union: selectionHelpers.union,
+	        unionByName: selectionHelpers.unionByName.bind(this)
 		}
 		
-		this.analyses = [];
+		this.analyses = datasetRespObj.analyses || [];
+
+		this.close = function(){
+			delete this.valuesBuffer;
+			delete this.dataview;
+			delete this.valueStore;
+			delete this.expression
+		};
 
 	};
 	

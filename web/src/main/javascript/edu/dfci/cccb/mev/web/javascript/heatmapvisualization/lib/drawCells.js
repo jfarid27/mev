@@ -1,40 +1,85 @@
-define(['./cellFilter', 'd3', 'qtip'], function(cellFilter, d3, qtip){
+define(['./cellFilter', 'd3', 'q', "jquery"], function(cellFilter, d3, q, $){
 	
 	//drawCells !View, !shownCells, !scales, Array [String], -> null
 	//	draws cells on heatmapvisualization object
-	return function(labels, ds){
+	return function(labels, ds, repaintAll){
 		var self = this;
 
 		var labelPairs = [];
-		
+		self.shownCells = []
 		labels.row.map(function(row){
 		    return labels.column.map(function(col){
 		        labelPairs.push([row, col]);
+		        self.shownCells.push({
+		        	column: col,
+		        	row: row,
+		        	value: NaN
+		        })
 		    });
 		});
-		self.shownCells = labelPairs.map(function(pair){ return ds.expression.get(pair);});
 		
-		
-		var allCells = self.DOM.heatmapCells.selectAll('rect');		
-		var newCells = allCells.data(self.shownCells, function(k){
+		ds.expression.getSome(self.shownCells).then(function(shownCells){
+			// DATA JOIN
+			//Join new data with old elements, if any.
+			var domCells = self.DOM.heatmapCells.selectAll('rect');
+			var allCells = domCells.data(shownCells, function(k){
 				return k.row+";"+k.column;
-			}
-		);
-		
-		newCells.enter().append('rect')
-			.attr({
-				x : function(d){ return self.scales.cells.xScale(d.column);},
-				y : function(d){ return self.scales.cells.yScale(d.row);},
-				height: self.params.cell.height - self.params.cell.padding,
-				width: self.params.cell.width - self.params.cell.padding,
-				fill: function(d){return self.scales.cells.colorScale(d.value);},
-				'cell-value': function(d) { return d.value;},
-				'cell-column': function(d) { return d.column;},
-				'cell-row': function(d) { return d.row;},
-				
 			});
+
+			// UPDATE
+			// Update old elements as needed here 
+			//	... nothing to update for existing cells
+			
+			// ENTER
+			// Create new elements as needed.
+			var newCells = allCells.enter();
+			
+			var newDom = newCells.append('rect')
+				.attr({
+					x : function(d){ return self.scales.cells.xScale(d.column);},
+					y : function(d){ return self.scales.cells.yScale(d.row);},
+					height: self.params.cell.height - self.params.cell.padding,
+					width: self.params.cell.width - self.params.cell.padding,
+					fill: function(d){ return self.scales.cells.colorScale(d.value);},
+//					fill: function(d){
+//						var node = this;
+//						ds.expression.tryGet([d.row, d.column]).then(function(value){						
+//							node.setAttribute("fill", self.scales.cells.colorScale(value));
+//						});
+////						return self.scales.cells.colorScale(d.value);
+//						return "";
+//					},
+					'cell-value': function(d) { return d.value;},
+					'cell-column': function(d) { return d.column;},
+					'cell-row': function(d) { return d.row;},
+			});
+			console.debug("swap:", newDom.size());
+			
+//			newCells.attr({fill: "blue"});
+			// ENTER + UPDATE
+			// Appending to the enter selection expands the update selection to include
+			// entering elements; so, operations on the update selection after appending to
+			// the enter selection will apply to both entering and updating nodes.
+			//	... nothing to update for all cells
+			if(repaintAll)
+				domCells.attr({fill: function(d){ return self.scales.cells.colorScale(d.value);}});
+//				domCells.attr({fill: "blue"});
+			
+	        // EXIT
+	        // Remove old elements as needed.
+			var deleteCells = allCells.exit(); 
+			deleteCells.remove();
+		})["catch"](function(e){
+			throw e;
+		});
+//		self.shownCells = labelPairs.map(function(pair){ return ds.expression.get(pair);});
 		
-		newCells.exit().remove();
+//		ds.expression.getAll(labelPairs).then(function(shownCells){
+//			
+//		});
+//		
+		
+		
 		var rowLabels = self.DOM.labels.row.selectAll('text').data(labels.row, function(k){return k;}),
 		colLabels = self.DOM.labels.column.selectAll('text').data(labels.column, function(k){return k;});
 		
@@ -63,9 +108,10 @@ define(['./cellFilter', 'd3', 'qtip'], function(cellFilter, d3, qtip){
             .text(function(d){
                 return d.slice(0, 13);
             })
-            .append('title').text(function(d){ return d });		
-        rowLabels.exit().remove();
+            .append('title').text(function(d){ return d });
 		
+        rowLabels.exit().remove();
+
 		colLabels.exit().remove();
 		
 		
@@ -88,6 +134,8 @@ define(['./cellFilter', 'd3', 'qtip'], function(cellFilter, d3, qtip){
 			width: 50,
 			fill: function(d){return self.scales.cells.colorScale(labelColorScale(d));}
 			
+		}).on("click", function(d, i){
+			$('#settingsModal-'+self.view.id).modal('show');
 		});
 		
 		self.DOM.legend.selectAll("text").data(rands).enter()

@@ -3,7 +3,6 @@ package com.google.refine.commands.project;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,6 @@ import com.google.refine.util.ParsingUtilities;
 import edu.dfci.cccb.mev.dataset.domain.contract.Dimension;
 import edu.dfci.cccb.mev.presets.contract.PresetDescriptor;
 import edu.dfci.cccb.mev.presets.contract.PresetDimensionBuilder;
-import freemarker.template.utility.NullArgumentException;
 
 public class ViewPresetRowAnnotationsCommand extends Command {
 
@@ -45,7 +43,7 @@ public class ViewPresetRowAnnotationsCommand extends Command {
     try {
         Properties options = ParsingUtilities.parseUrlParameters(request);
         if(!options.containsKey ("import-preset"))
-          throw new NullArgumentException ("import-preset");
+          throw new ServletException ("import-preset");
         
         String datasetName = options.getProperty ("import-preset");
         long projectID = Project.generateID();
@@ -58,13 +56,13 @@ public class ViewPresetRowAnnotationsCommand extends Command {
         
 //        final String sSamples = request.getParameter ("samples");
 //        if(sSamples==null)
-//          throw new NullArgumentException ("samples filter parameter not provided");        
+//          throw new ServletException ("samples filter parameter not provided");        
 //        final List<String> samples = Arrays.asList (sSamples.split (","));
 //        if(samples.size ()<=0)
-//          throw new NullArgumentException ("samples filter size is 0: "+sSamples);      
+//          throw new ServletException ("samples filter size is 0: "+sSamples);      
 //        final String samplesProjectName=request.getParameter ("samplesprojname");
 //        if(samplesProjectName==null)
-//          throw new NullArgumentException ("samplesProjectName parameter not provided");
+//          throw new ServletException ("samplesProjectName parameter not provided");
 
         
         InputStream stream= descriptor.rowUrl ().openStream ();;         
@@ -105,17 +103,7 @@ public class ViewPresetRowAnnotationsCommand extends Command {
 
                 @Override
                 public void start (Project project) {
-
-                  // if no id column found, assume first column is the id
-                  List<Column> columns = project.columnModel.columns;
-                  
-                  theIdColumn = project.columnModel.getColumnByName ("probeset_id");
-                  if(theIdColumn==null){
-                    theIdColumn = project.columnModel.getColumnByName ("Symbol");  
-                  }
-                  if(theIdColumn==null){
-                    theIdColumn = columns.get (0);  
-                  }
+                  theIdColumn = project.getKeyColumn("Symbol", "probeset_id");
                 }
 
                 @Override

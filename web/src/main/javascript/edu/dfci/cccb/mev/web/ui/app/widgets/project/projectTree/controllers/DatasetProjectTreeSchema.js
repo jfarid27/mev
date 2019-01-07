@@ -1,5 +1,18 @@
-define([], function(){
+define(["lodash"], function(_){
 	var DatasetProjectTreeSchema=function DatasetProjectTreeSchema(){
+	function getInheritedParams(defaults, node){
+		var params = defaults || {};
+		if(node.nodeParent && node.nodeParent.nodeConfig){
+			_.extend(params, node.nodeParent.nodeConfig.state.getParams(node.nodeParent));
+		}						
+		return params;
+	}
+	var stateBase = {
+		getParams: function(node){
+			return {};
+		}
+	}	
+	
 	return {
 							
 			"dataset": {
@@ -12,7 +25,7 @@ define([], function(){
 				}
 			},
 			"dataset.column": {
-				label: "Column Sets", 
+				label: "Sample Sets", 
 				state: {
 					name: ".dataset.columnSets", 
 					getParams: function(node){
@@ -31,7 +44,7 @@ define([], function(){
 			},
 			
 			"dataset.row": {
-				label: "Row Sets",
+				label: "Gene Sets",
 				state: {
 					name: ".dataset.rowSets", 
 					getParams: function(node){
@@ -56,10 +69,14 @@ define([], function(){
 				}
 			},			
 			"dataset\.analyses\.[0123456789][0123456789]*": {
+				type: "Analysis",
 				state: {
 					name: ".dataset.analysis",
 					getParams: function(node){
-						return {analysisId: node.nodeData.name, analysisType: node.nodeData.type};
+						return getInheritedParams({analysisId: node.nodeData.name, analysisType: node.nodeData.type}, node);
+					},
+					isDisabled: function(node){
+						return node.nodeData.status==='IN_PROGRESS';
 					}
 				}
 			}

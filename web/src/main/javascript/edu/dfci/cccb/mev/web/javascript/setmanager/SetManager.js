@@ -1,5 +1,5 @@
-define(['jquery','angular'], function(jquery, angular){
-	angular.module( 'Mev.SetManager', [])
+define(['jquery','mui'], function(jquery, ng){
+	return ng.module( 'Mev.SetManager', ["mevDomainCommon"])
 		.directive('selectionSetManager', [function (){
 			  return {				  		  
 				  scope: {
@@ -42,8 +42,8 @@ define(['jquery','angular'], function(jquery, angular){
 			};
 		}])		
 		.controller('SelectionSetManagerCtl', 
-	    ['$scope', '$element', '$attrs', '$routeParams', '$http', 'alertService', 
-		function($scope, $element, $attrs, $routeParams, $http, alertService){
+	    ['$scope', '$element', '$attrs', '$routeParams', '$http', "mevContext", "$rootScope",
+		function($scope, $element, $attrs, $routeParams, $http, mevContext, $rootScope){
 			
 			$scope.sayHelloCtl = function() {
 				alert($scope.heatmapId + ":" + $scope.dataset.selections.column.values.length + ":" + $scope.$id);
@@ -75,31 +75,35 @@ define(['jquery','angular'], function(jquery, angular){
 			
 			function getSelected(dimension){
 			    return $scope.heatmapData[dimension].selections.filter(function(d){
-                    return (d.setSelectionChecked == "true") ? true : false
+                    // return (d.setSelectionChecked === true) ? true : false
+                    return d.setSelectionChecked;
                         
                 })
 			};
+			$scope.getSelected = getSelected;
 			
 			function pushNewSelection(dimension, selectedSets){
-			    $http({
-                    method:"POST", 
-               url:"/dataset/" + ($routeParams.datasetName || $scope.heatmapData.id) + "/" 
-                + dimension
-                + "/selection/",
-               data:{
-                   name: $scope.selectionParams[dimension].name,
-                   properties: {
-                       selectionDescription: '',
-                           selectionColor: '#'+('00000'+(Math.random()*0xFFFFFF<<0)).toString(16).substr(-6),                     
-                       },
-                        keys: selectedSets
-                    }
-               })
+				var selection = {
+					name: $scope.selectionParams[dimension].name,
+					properties: {
+						selectionDescription: '',
+						selectionColor: '#'+('00000'+(Math.random()*0xFFFFFF<<0)).toString(16).substr(-6),
+					},
+					keys: selectedSets
+				};
+
+				$http({
+                   method:"POST",
+				   url:"/dataset/" + ($routeParams.datasetName || $scope.heatmapData.id) + "/"
+					+ dimension
+					+ "/selection/",
+				   data: selection
+				})
                .success(function(response){
                         $scope.$emit('SeletionAddedEvent', dimension);
                         var message = "Added selection with name " + $scope.selectionParams[dimension].name + ".";
                         var header = "Heatmap Selection Addition";
-                         
+				   		$rootScope.$broadcast("mui:dataset:selections:added", dimension.toLowerCase(), selection);
                         alertService.success(message,header);
                })
                .error(function(data, status, headers, config) {
@@ -115,7 +119,36 @@ define(['jquery','angular'], function(jquery, angular){
 			};
 			
 			function pushNewDataset(dimension, selectedSets){
-			    $http({
+				var selectionData = {
+                    name: $scope.exportParams[dimension].name,
+                    properties: {
+                        selectionDescription: '',
+                        selectionColor: '#ffffff',
+                    },
+                    keys: selectedSets
+                };
+				mevContext.current().selection.export({
+                    datasetName: $routeParams.datasetName || $scope.heatmapData.id,
+                    dimension: dimension
+
+                }, selectionData,
+                function (response) {
+                	mevContext.current().resetSelections(dimension);
+                    var message = "Added " + $scope.exportParams[dimension].name + " as new Dataset!";
+                    var header = "New Dataset Export";
+
+                    alertService.success(message, header);
+                },
+                function (data, status, headers, config) {
+                    var message = "Couldn't export new dataset. If " + "problem persists, please contact us.";
+
+                    var header = "New Dataset Export Problem (Error Code: " + status + ")";
+
+                    alertService.error(message, header);
+                });
+
+/*
+		    $http({
                     method:"POST", 
                url:"/dataset/" + ($routeParams.datasetName || $scope.heatmapData.id) + "/" 
                 + dimension
@@ -134,15 +167,14 @@ define(['jquery','angular'], function(jquery, angular){
                         var message = "Exported new dataset with name " + $scope.exportParams[dimension].name + ".";
                         var header = "Export New Dataset";
                  
-                 	   $http({
-                           method:"POST", 
-                           url:"/annotations/" + $routeParams.datasetName + "/annotation/row" 
-    	                   + "/export?destId="+$scope.exportParams[dimension].name});
-                	   $http({
-                           method:"POST", 
-                           url:"/annotations/" + $routeParams.datasetName + "/annotation/column" 
-    	                   + "/export?destId="+$scope.exportParams[dimension].name});
-//                       http://localhost:8080/annotations/dummy.data.txt/annotation/row/export?destHeatmapId=bbb
+                 	  //  $http({
+                    //        method:"POST", 
+                    //        url:"/annotations/" + $scope.heatmapData.id + "/annotation/row" 
+    	               //     + "/export?destId="+$scope.exportParams[dimension].name});
+                	   // $http({
+                    //        method:"POST", 
+                    //        url:"/annotations/" + $scope.heatmapData.id + "/annotation/column" 
+    	               //     + "/export?destId="+$scope.exportParams[dimension].name});
                  
                         alertService.success(message,header);
                })
@@ -155,7 +187,7 @@ define(['jquery','angular'], function(jquery, angular){
                         + ")";
                              
                      alertService.error(message,header);
-               });
+               });*/
 			};
 			
 			$scope.addDifferenceSelection = function(dimension){

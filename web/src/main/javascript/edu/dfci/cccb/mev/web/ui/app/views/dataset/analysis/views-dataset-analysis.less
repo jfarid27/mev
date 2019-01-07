@@ -30,7 +30,7 @@
 			}
 			
 			.btn-toolbar{
-				font-size: 0;	
+				font-size: @font-size-base;
 				.btn{
 					.btn-sm();					
 					padding: 8px 9px;
@@ -39,8 +39,11 @@
 			}
 			
 			> li {
+				> a {
+					display: inline-block;
+				}
 				&.active {
-					> a {
+					> a {						
 						border: 1px solid @brand-success;
 						border-bottom: 1px solid @body-bg;
 					}
@@ -54,6 +57,7 @@
 			}
 			
 			.action-menu{
+				margin-top: 4px;
 				.pull-right();
 				.btn{
 					.btn-analysis-action-menu();	
@@ -82,7 +86,7 @@
 			.btn-toolbar{
 				.pull-right();				
 				.btn-group{
-					font-size: 0;
+					font-size: @font-size-base;
 					.btn{
 						.btn-sm();
 						.btn-analysis-action-menu();
@@ -99,6 +103,14 @@
 		.btn{
 			.btn-sm();
 		}		
+		.results-body{
+			.results-top{
+				height: 35%;
+			}
+			.results-bottom{
+				height: 62%;
+			}
+		}
 	}
 	
 	results-table,
@@ -109,37 +121,39 @@
 			.table-bordered();
 			.table-condensed();
 			border: 0px none;
-
-			tr{
-				th,td{					
-					vertical-align: top;
-					white-space: nowrap;
-					font-size: @font-size-base;
-					&:first-child{						
-						border-left: 0px none;
-					}
-					&:last-child{
-						border-right: 0px none;										
-					}
-					p{
-						margin: 0;
+			&, tbody{
+				tr{
+					th,td{					
+						vertical-align: top;
+	//					white-space: nowrap;
+						padding: 1px;
 						font-size: @font-size-base;
-					}
-				}
-				th{
-					.input-group {
-						> .form-control,
-						> .input-group-addon,
-						.input-group-btn > .btn{
-							.input-sm();
+						&:first-child{						
+							border-left: 0px none;
+						}
+						&:last-child{
+							border-right: 0px none;										
+						}
+						p{
+							margin: 0;
+							font-size: @font-size-base;
 						}
 					}
-										
-					&:first-child{						
-						padding-left: 0;
-					}
-					&:last-child{
-						padding-right: 0;										
+					th{
+						.input-group {
+							> .form-control,
+							> .input-group-addon,
+							.input-group-btn > .btn{
+								.input-sm();
+							}
+						}
+											
+						&:first-child{						
+							padding-left: 0;
+						}
+						&:last-child{
+							padding-right: 0;										
+						}
 					}
 				}
 			}
@@ -151,11 +165,20 @@
 		}	
 		.pagination{
 			.pagination-sm();
-			margin: 0;
-			
+			margin: 0;			
 			> li {
 				> a, span {
 					margin-left: initial;
+					padding: 3px 3px;
+				}
+				&:first-child{
+					> span {
+						margin-left: 0;
+						padding-left: 0;
+						&:hover{
+							border: solid 1px transparent;
+						}
+					}
 				}
 			}
 		}
@@ -206,5 +229,9 @@
 			display: none;
 		}	
 	}
+		
 }
 @import "ttest/views-dataset-analysis-ttest.less";
+@import "genesd/views-dataset-analysis-genesd.less";
+@import "genemad/views-dataset-analysis-genemad.less";
+@import "pca/views-dataset-analysis-pca.less";
